@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>番茄专注 · 设计预览</title>
+<style>
+  :root{
+    --coral:#FF5E6C; --peach:#FFB199; --mint:#4ADE9B; --teal:#2DD4BF; --amber:#FFC46B;
+    --bg1:#140E1B; --bg2:#1E1024; --bg3:#2E1220;
+  }
+  *{box-sizing:border-box;-webkit-font-smoothing:antialiased}
+  body{
+    margin:0;padding:40px 20px 64px;background:#0A070D;color:#fff;
+    font-family:-apple-system,"SF Pro Rounded","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    display:flex;flex-wrap:wrap;gap:34px;justify-content:center;
+  }
+  h1{width:100%;text-align:center;font-size:19px;font-weight:700;letter-spacing:.5px;margin:0 0 8px}
+  p.sub{width:100%;text-align:center;color:#8a7f96;font-size:12.5px;margin:0 0 26px}
+  .phone{
+    width:300px;height:650px;border-radius:42px;position:relative;overflow:hidden;
+    background:linear-gradient(180deg,var(--bg1),var(--bg2) 55%,var(--bg3));
+    box-shadow:0 30px 70px -20px rgba(255,94,108,.28), 0 0 0 1px rgba(255,255,255,.08);
+  }
+  .phone::before{
+    content:"";position:absolute;inset:-40% -30% auto -30%;height:70%;
+    background:radial-gradient(ellipse at 50% 30%, rgba(255,94,108,.26), transparent 62%);
+    pointer-events:none;
+  }
+  .notch{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:96px;height:22px;border-radius:14px;background:#000;z-index:5;opacity:.8}
+  .screen{position:relative;height:100%;padding:44px 20px 12px;display:flex;flex-direction:column;gap:14px;z-index:2}
+  .row{display:flex;align-items:center;gap:10px}
+  .between{display:flex;align-items:center;justify-content:space-between}
+  .h1{font-size:20px;font-weight:800;letter-spacing:.2px}
+  .dim{color:rgba(255,255,255,.46);font-size:11.5px}
+  .label{font-size:10px;font-weight:800;letter-spacing:1.6px;color:rgba(255,255,255,.34);text-transform:uppercase}
+  .card{
+    background:linear-gradient(145deg,rgba(255,255,255,.085),rgba(255,255,255,.035));
+    border:1px solid rgba(255,255,255,.10);border-radius:22px;padding:14px;
+  }
+  .ring{position:relative;width:230px;height:230px;margin:4px auto 0}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+  .phase{font-size:11px;font-weight:800;letter-spacing:2.4px;color:var(--coral)}
+  .time{font-size:52px;font-weight:200;letter-spacing:-1px;font-variant-numeric:tabular-nums;line-height:1}
+  .task{font-size:11.5px;color:rgba(255,255,255,.5);max-width:150px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lock{display:inline-flex;gap:4px;align-items:center;font-size:9px;font-weight:800;color:var(--amber);background:rgba(255,196,107,.14);padding:3px 8px;border-radius:99px}
+  .controls{display:flex;align-items:center;justify-content:center;gap:22px;margin-top:2px}
+  .ghost{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10);display:grid;place-items:center;font-size:16px;color:rgba(255,255,255,.72)}
+  .play{
+    width:76px;height:76px;border-radius:50%;display:grid;place-items:center;font-size:26px;color:#fff;
+    background:linear-gradient(135deg,var(--coral),var(--peach));
+    box-shadow:0 14px 34px -6px rgba(255,94,108,.6);
+  }
+  .chips{display:flex;gap:8px;overflow:hidden}
+  .chip{font-size:11px;font-weight:700;padding:7px 13px;border-radius:99px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.6);white-space:nowrap}
+  .chip.on{background:rgba(255,94,108,.26);border-color:rgba(255,94,108,.55);color:#fff}
+  .block{display:flex;align-items:center;gap:12px}
+  .shield{width:40px;height:40px;border-radius:50%;background:rgba(255,94,108,.16);display:grid;place-items:center;font-size:16px}
+  .tabbar{
+    margin-top:auto;display:flex;gap:4px;padding:6px;border-radius:99px;
+    background:rgba(28,18,34,.94);border:1px solid rgba(255,255,255,.08);
+  }
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;border-radius:99px;font-size:9.5px;font-weight:700;color:rgba(255,255,255,.42)}
+  .tab .ico{font-size:15px}
+  .tab.on{background:rgba(255,94,108,.2);border:1px solid rgba(255,94,108,.38);color:#fff}
+  .list{display:flex;flex-direction:column;gap:9px}
+  .item{display:flex;gap:10px;align-items:flex-start}
+  .dot{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.26);flex:none;margin-top:2px}
+  .dot.done{background:var(--mint);border-color:var(--mint)}
+  .bar{height:4px;width:52px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden;margin-top:5px}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--coral),var(--peach))}
+  .tag{font-size:9px;font-weight:800;color:var(--coral);background:rgba(255,94,108,.16);padding:2px 7px;border-radius:99px}
+  .tiles{display:flex;gap:8px}
+  .tile{flex:1;border-radius:20px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.09);padding:11px}
+  .tile .t{font-size:9.5px;font-weight:800;display:flex;gap:4px;align-items:center;margin-bottom:6px}
+  .tile .v{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+  .tile .u{font-size:9px;color:rgba(255,255,255,.42);margin-left:2px}
+  .bars{display:flex;align-items:flex-end;gap:8px;height:96px;margin-top:6px}
+  .bars .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+  .bars .b{width:100%;border-radius:7px;background:linear-gradient(180deg,var(--coral),var(--peach));min-height:4px}
+  .bars .b.zero{background:rgba(255,255,255,.10)}
+  .bars .l{font-size:9px;color:rgba(255,255,255,.42)}
+  .srow{display:flex;align-items:center;justify-content:space-between}
+  .srow .n{font-size:13px;color:rgba(255,255,255,.88)}
+  .step{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);display:grid;place-items:center;font-size:11px}
+  .val{font-size:12.5px;font-weight:700;min-width:56px;text-align:right;font-variant-numeric:tabular-nums}
+  .tog{width:38px;height:22px;border-radius:99px;background:rgba(255,94,108,.85);position:relative}
+  .tog::after{content:"";position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:#fff}
+  .tog.off{background:rgba(255,255,255,.14)}
+  .tog.off::after{right:auto;left:2px}
+  hr{border:0;border-top:1px solid rgba(255,255,255,.06);margin:11px 0}
+</style>
+</head>
+<body>
+<h1>番茄专注 · PomodoroFocus</h1>
+<p class="sub">设计预览（静态示意）。真实 App 里的倒计时、呼吸光晕、灵动岛、震动均由 SwiftUI 实时驱动。</p>
+
+<!-- 专注 -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+    <div class="between">
+      <div>
+        <div class="h1">上午专注时间</div>
+        <div class="dim" style="margin-top:4px">今日 3/8 个 · 连续 6 天</div>
+      </div>
+      <div style="position:relative;width:52px;height:52px">
+        <svg width="52" height="52"><circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="5"/>
+        <circle cx="26" cy="26" r="22" fill="none" stroke="url(#g1)" stroke-width="5" stroke-linecap="round"
+                stroke-dasharray="138" stroke-dashoffset="97" transform="rotate(-90 26 26)"/></svg>
+        <div style="position:absolute;inset:0;display:grid;place-items:center;font-size:11px;font-weight:800">37%</div>
+      </div>
+    </div>
+
+    <div class="ring">
+      <svg width="230" height="230">
+        <defs>
+          <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#FF5E6C"/><stop offset="100%" stop-color="#FFB199"/>
+          </linearGradient>
+        </defs>
+        <circle cx="115" cy="115" r="100" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="15"/>
+        <circle cx="115" cy="115" r="100" fill="none" stroke="url(#g1)" stroke-width="15" stroke-linecap="round"
+                stroke-dasharray="628" stroke-dashoffset="252"/>
+      </svg>
+      <div class="center">
+        <div class="phase">🔥 专 注</div>
+        <div class="time">18:42</div>
+        <div class="task">写完项目方案 v2</div>
+        <div class="lock">🔒 严格模式</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="ghost">↺</div>
+      <div class="play">❚❚</div>
+      <div class="ghost">⏭</div>
+    </div>
+
+    <div class="chips">
+      <div class="chip on">🌊 棕噪音</div>
+      <div class="chip">🌧 粉噪音</div>
+      <div class="chip on">🛡 严格模式</div>
+    </div>
+
+    <div class="card block">
+      <div class="shield">🛡</div>
+      <div>
+        <div style="font-size:12.5px;font-weight:600">正在屏蔽 4 项干扰</div>
+        <div class="dim" style="margin-top:3px;font-size:10.5px">专注结束后自动解除屏蔽</div>
+      </div>
+      <div style="margin-left:auto;color:rgba(255,255,255,.3)">›</div>
+    </div>
+
+    <div class="dim" style="text-align:center;font-size:10px;color:rgba(255,255,255,.24)">长按此处 1.2 秒可放弃本次专注</div>
+
+    <div class="tabbar">
+      <div class="tab on"><span class="ico">⏱</span>专注</div>
+      <div class="tab"><span class="ico">☑</span>任务</div>
+      <div class="tab"><span class="ico">📊</span>统计</div>
+      <div class="tab"><span class="ico">⚙</span>设置</div>
+    </div>
+  </div>
+</div>
+
+<!-- 任务 -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+    <div class="between">
+      <div>
+        <div class="h1">任务清单</div>
+        <div class="dim" style="margin-top:4px">点一下卡片设为当前专注任务</div>
+      </div>
+      <div style="width:38px;height:38px;border-radius:50%;background:rgba(255,94,108,.22);border:1px solid rgba(255,94,108,.45);display:grid;place-items:center;font-size:17px;font-weight:700">+</div>
+    </div>
+
+    <div class="card" style="border-color:rgba(255,94,108,.42)">
+      <div class="item">
+        <div class="dot"></div>
+        <div style="flex:1">
+          <div style="font-size:13.5px;font-weight:600">写完项目方案 v2</div>
+          <div class="row" style="gap:8px;margin-top:2px">
+            <span class="dim" style="font-size:11px">🍅 2/4</span>
+            <span class="bar"><i style="width:50%"></i></span>
+            <span class="tag">当前</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="item">
+        <div class="dot"></div>
+        <div style="flex:1">
+          <div style="font-size:13.5px;font-weight:600">复习算法第三章</div>
+          <div class="row" style="gap:8px;margin-top:2px">
+            <span class="dim" style="font-size:11px">🍅 1/3</span>
+            <span class="bar"><i style="width:33%"></i></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="item">
+        <div class="dot"></div>
+        <div style="flex:1">
+          <div style="font-size:13.5px;font-weight:600">整理本周会议纪要</div>
+          <div class="row" style="gap:8px;margin-top:2px">
+            <span class="dim" style="font-size:11px">🍅 0/2</span>
+            <span class="bar"><i style="width:4%"></i></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="label" style="margin-top:6px">已完成</div>
+
+    <div class="card" style="opacity:.55">
+      <div class="item">
+        <div class="dot done"></div>
+        <div style="flex:1">
+          <div style="font-size:13.5px;font-weight:600;text-decoration:line-through;color:rgba(255,255,255,.5)">回复全部邮件</div>
+          <div class="row" style="gap:8px;margin-top:2px">
+            <span class="dim" style="font-size:11px">🍅 2/2</span>
+            <span class="bar"><i style="width:100%"></i></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <div class="tab"><span class="ico">⏱</span>专注</div>
+      <div class="tab on"><span class="ico">☑</span>任务</div>
+      <div class="tab"><span class="ico">📊</span>统计</div>
+      <div class="tab"><span class="ico">⚙</span>设置</div>
+    </div>
+  </div>
+</div>
+
+<!-- 统计 -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+    <div>
+      <div class="h1">专注统计</div>
+      <div class="dim" style="margin-top:4px">累计 128 个番茄</div>
+    </div>
+
+    <div class="tiles">
+      <div class="tile"><div class="t" style="color:#FF5E6C">🔥 今日番茄</div><div class="v">3<span class="u">个</span></div></div>
+      <div class="tile"><div class="t" style="color:#FFC46B">🕐 专注时长</div><div class="v">1.3<span class="u">小时</span></div></div>
+      <div class="tile"><div class="t" style="color:#4ADE9B">⚡ 连续打卡</div><div class="v">6<span class="u">天</span></div></div>
+    </div>
+
+    <div class="card">
+      <div class="between"><div style="font-size:13.5px;font-weight:600">最近 7 天</div><div class="dim" style="font-size:11px">共 23 个</div></div>
+      <div class="bars">
+        <div class="col"><div class="b" style="height:40%"></div><div class="l">周三</div></div>
+        <div class="col"><div class="b" style="height:65%"></div><div class="l">周四</div></div>
+        <div class="col"><div class="b zero" style="height:6%"></div><div class="l">周五</div></div>
+        <div class="col"><div class="b" style="height:80%"></div><div class="l">周六</div></div>
+        <div class="col"><div class="b" style="height:50%"></div><div class="l">周日</div></div>
+        <div class="col"><div class="b" style="height:95%"></div><div class="l">周一</div></div>
+        <div class="col"><div class="b" style="height:35%"></div><div class="l">今天</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:13.5px;font-weight:600;margin-bottom:11px">任务排行</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="row"><span style="width:96px;font-size:11.5px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">写完项目方案 v2</span><span class="bar" style="flex:1"><i style="width:100%"></i></span><span class="dim" style="font-size:11px;width:16px;text-align:right">12</span></div>
+        <div class="row"><span style="width:96px;font-size:11.5px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">复习算法第三章</span><span class="bar" style="flex:1"><i style="width:66%"></i></span><span class="dim" style="font-size:11px;width:16px;text-align:right">8</span></div>
+        <div class="row"><span style="width:96px;font-size:11.5px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">整理会议纪要</span><span class="bar" style="flex:1"><i style="width:33%"></i></span><span class="dim" style="font-size:11px;width:16px;text-align:right">4</span></div>
+      </div>
+    </div>
+
+    <div class="card row" style="gap:10px">
+      <span style="font-size:15px">📈</span>
+      <span class="dim" style="font-size:11.5px;line-height:1.5">本周共完成 23 个番茄，最佳是周一（7 个）。</span>
+    </div>
+
+    <div class="tabbar">
+      <div class="tab"><span class="ico">⏱</span>专注</div>
+      <div class="tab"><span class="ico">☑</span>任务</div>
+      <div class="tab on"><span class="ico">📊</span>统计</div>
+      <div class="tab"><span class="ico">⚙</span>设置</div>
+    </div>
+  </div>
+</div>
+
+<!-- 设置 -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+    <div>
+      <div class="h1">设置</div>
+      <div class="dim" style="margin-top:4px">调成属于你的节奏</div>
+    </div>
+
+    <div class="card">
+      <div class="label">时长</div>
+      <div style="margin-top:10px">
+        <div class="srow"><span class="n">专注</span><span class="row" style="gap:9px"><span class="step">−</span><span class="val">25 分钟</span><span class="step">+</span></span></div>
+        <hr>
+        <div class="srow"><span class="n">短休息</span><span class="row" style="gap:9px"><span class="step">−</span><span class="val">5 分钟</span><span class="step">+</span></span></div>
+        <hr>
+        <div class="srow"><span class="n">长休息</span><span class="row" style="gap:9px"><span class="step">−</span><span class="val">15 分钟</span><span class="step">+</span></span></div>
+        <hr>
+        <div class="srow"><span class="n">每日目标</span><span class="row" style="gap:9px"><span class="step">−</span><span class="val">8 个</span><span class="step">+</span></span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">自动化</div>
+      <div style="margin-top:11px">
+        <div class="srow"><span class="n">严格模式</span><div class="tog"></div></div>
+        <div class="dim" style="font-size:10.5px;margin-top:3px">专注进行中不能暂停、跳过或重置</div>
+        <hr>
+        <div class="srow"><span class="n">自动开始休息</span><div class="tog"></div></div>
+        <hr>
+        <div class="srow"><span class="n">屏幕常亮</span><div class="tog off"></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">专注屏蔽</div>
+      <div class="row" style="margin:11px 0;gap:8px">
+        <span style="color:#4ADE9B;font-size:13px">🛡</span>
+        <span style="font-size:12px;color:rgba(255,255,255,.8)">屏幕使用时间已授权</span>
+        <span class="dim" style="margin-left:auto;font-size:11px">4 项</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;height:44px;border-radius:99px;background:linear-gradient(135deg,#FF5E6C,#FFB199);font-size:13.5px;font-weight:700">管理屏蔽清单</div>
+    </div>
+
+    <div class="tabbar">
+      <div class="tab"><span class="ico">⏱</span>专注</div>
+      <div class="tab"><span class="ico">☑</span>任务</div>
+      <div class="tab"><span class="ico">📊</span>统计</div>
+      <div class="tab on"><span class="ico">⚙</span>设置</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
