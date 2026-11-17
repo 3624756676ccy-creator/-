@@ -1,0 +1,113 @@
+name: Build IPA
+
+on:
+  # 手动触发：Actions 页面左侧点 "Build IPA" → Run workflow
+  workflow_dispatch:
+    inputs:
+      configuration:
+        description: "构建配置"
+        required: false
+        default: "Release"
+        type: choice
+        options:
+          - Release
+          - Debug
+  # 每次 push 到 main 也自动跑一次（不需要的话删掉这 4 行）
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build unsigned IPA
+    runs-on: macos-14   # 固定 macOS + Xcode 15，比 macos-latest 稳定
+    timeout-minutes: 40
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 显示 Xcode 版本
+        run: xcodebuild -version
+
+      - name: 自动探测工程与 Scheme
+        id: detect
+        run: |
+          set -euo pipefail
+
+          # 优先用 .xcworkspace（有 CocoaPods/SPM 时），否则用 .xcodeproj
+          WORKSPACE=$(find . -maxdepth 3 -name "*.xcworkspace" -not -path "*/.*" | head -n 1 || true)
+          PROJECT=$(find . -maxdepth 3 -name "*.xcodeproj" -not -path "*/.*" | head -n 1 || true)
+
+          if [ -n "$WORKSPACE" ]; then
+            CONTAINER_FLAG="-workspace"
+            CONTAINER="$WORKSPACE"
+          elif [ -n "$PROJECT" ]; then
+            CONTAINER_FLAG="-project"
+            CONTAINER="$PROJECT"
+          else
+            echo "::error::仓库里找不到 .xcodeproj 或 .xcworkspace，请确认 Xcode 工程已提交到仓库"
+            exit 1
+          fi
+
+          # 取第一个可构建的 scheme
+          SCHEME=$(xcodebuild $CONTAINER_FLAG "$CONTAINER" -list -json \
+                   | python3 -c "import sys,json;d=json.load(sys.stdin);w=d.get('workspace') or d.get('project');print((w['schemes'] or [''])[0])")
+          if [ -z "$SCHEME" ]; then
+            echo "::error::找不到可用的 Scheme，请在 Xcode 里勾选 Shared"
+            exit 1
+          fi
+
+          echo "container_flag=$CONTAINER_FLAG" >> "$GITHUB_OUTPUT"
+          echo "container=$CONTAINER"           >> "$GITHUB_OUTPUT"
+          echo "scheme=$SCHEME"                 >> "$GITHUB_OUTPUT"
+          echo "探测结果：$CONTAINER_FLAG $CONTAINER / scheme=$SCHEME"
+
+      - name: 编译（不签名）
+        env:
+          CONTAINER_FLAG: ${{ steps.detect.outputs.container_flag }}
+          CONTAINER: ${{ steps.detect.outputs.container }}
+          SCHEME: ${{ steps.detect.outputs.scheme }}
+          CONFIG: ${{ github.event.inputs.configuration || 'Release' }}
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            $CONTAINER_FLAG "$CONTAINER" \
+            -scheme "$SCHEME" \
+            -configuration "$CONFIG" \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM="" \
+            build
+
+      - name: 打成 .ipa
+        id: package
+        run: |
+          set -euo pipefail
+          APP=$(find build/Build/Products -maxdepth 3 -name "*.app" -type d | head -n 1)
+          if [ -z "$APP" ]; then
+            echo "::error::编译产物里找不到 .app"
+            exit 1
+          fi
+          NAME=$(basename "$APP" .app)
+
+          rm -rf Payload && mkdir -p Payload
+          cp -R "$APP" Payload/
+          zip -qry "${NAME}-unsigned.ipa" Payload
+
+          echo "ipa=${NAME}-unsigned.ipa" >> "$GITHUB_OUTPUT"
+          ls -lh "${NAME}-unsigned.ipa"
+
+      - name: 上传产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipa-unsigned
+          path: ${{ steps.package.outputs.ipa }}
+          if-no-files-found: error
+          retention-days: 7
